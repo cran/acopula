@@ -197,7 +197,10 @@ eCopula(rge,ge,technique="ML",procedure="grid",ggridparameters=list(c(2.,6.,20))
 ## --- GoF test, set higher N to increase precision of p-value
 gCopula(rge,ge,etechnique="ML",N=10)
 # parallel computing takes lesser time, but the progress is not displayed
-gCopula(rge,ge,etechnique="ML",N=10,ncores=2)  
+# not available on Windows OS
+if(.Platform$OS.type!="windows") {
+  gCopula(rge,ge,etechnique="ML",N=10,ncores=2)
+}
 
 ## testing if two data sets has equal copulas
 rge1 <- rCopula(80,dim=2,genClayton(),gpars=3)
