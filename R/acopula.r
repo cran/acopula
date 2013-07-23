@@ -50,6 +50,10 @@ vpartition <- function(x, lengths, matrixify=TRUE) {
   sapply(mapply(function(i,j) c(x[1],x)[i:j], lo+1, up+1, SIMPLIFY = F),function(y) y[-1],simplify=matrixify)#treats zero lengths
 }
 
+#CDF of 4-parametric Pareto distribution (type IV), pars[1:3] > 0, location pars[4] in R
+pPareto <- function(t,pars) ifelse(t>=pars[4], 1-(1+((t-pars[4])/pars[1])^(1/pars[3]))^(-pars[2]), 0) 
+qPareto <- function(t,pars) pars[1]*((1-t)^(-1/pars[2])-1)^(pars[3])+pars[4]
+
 # --- copula-related functions
 
 #create function from 'base' and feed with 'data' (both being matrix or data frame)
@@ -89,6 +93,8 @@ genGumbel <- function(...) {
     gen.inv = function(t, pars) exp(-t^(1/pars[1])),
     gen.inv.der = function(t, pars) -exp(-t^(1/pars[1]))*t^(1/pars[1]-1)/pars[1],
     gen.inv.der2 = function(t, pars) exp(-t^(1/pars[1]))*t^(1/pars[1]-2)*(pars[1]+t^(1/pars[1])-1)/pars[1]^2,
+    kendall = list(coef=function(t) 1-1/t, icoef=function(t) 1/(1-t), bounds=c(0,1)),
+    spearman = list(coef=function(t) pPareto(t,c(1.41917,2.14723,1,1)), icoef=function(t) qPareto(t,c(1.41917,2.14723,1,1)), bounds=c(0,1)),
     lower = 1,     #Pi, g(t)=-ln(t)
     upper = Inf,		#M
     id="Gumbel"
@@ -107,6 +113,8 @@ genClayton <- function(...) {
     gen.inv = function(t, pars) (1+t)^(-1/pars[1]),
     gen.inv.der = function(t, pars) -(1+t)^(-1-1/pars[1])/pars[1],
     gen.inv.der2 = function(t, pars) (1 + 1/pars[1])*(1 + t)^(-2 - 1/pars[1])/pars[1],
+    kendall = list(coef=function(t) t/(t+2), icoef=function(t) 2*t/(1-t), bounds=c(0,1)),
+    spearman = list(coef=function(t) pPareto(t,c(0.496534,1.95277,0.986814,0)), icoef=function(t) qPareto(t,c(0.496534,1.95277,0.986814,0)), bounds=c(0,1)),
     lower = 0.01, upper = Inf,
     id="Clayton"
   )
@@ -123,6 +131,8 @@ genFrank <- function(...) {
     gen.inv = function(t, pars) if(abs(pars[1]) < 0.00001) return(exp(-t)) else -log(1-exp(-t)+exp(-t-pars[1]))/pars[1],
     gen.inv.der = function(t, pars) if(abs(pars[1]) < 0.00001) return(-exp(-t)) else -exp(-t)/(-exp(-t)+1/(1-exp(-pars[1])))/pars[1],
     gen.inv.der2 = function(t, pars) if(abs(pars[1]) < 0.00001) return(exp(-t)) else (exp(pars[1]+t)*(-1+exp(pars[1])))/((1-exp(pars[1])+exp(pars[1]+t))^2*pars[1]),
+    kendall = list(coef=function(t) pPareto(t,c(7.46846,1.25305,0.854724,0)), icoef=function(t) qPareto(t,c(7.46846,1.25305,0.854724,0)), bounds=c(0,1)), #only positive dep.
+    spearman = list(coef=function(t) pPareto(t,c(13.2333,3.67989,0.857562,0)), icoef=function(t) qPareto(t,c(13.2333,3.67989,0.857562,0)), bounds=c(0,1)), #only positive dep.
     lower = -Inf, upper = Inf,
     id="Frank"
   )
@@ -139,6 +149,8 @@ genJoe <- function(...) {
     gen.inv = function(t, pars) 1-(1-exp(-t))^(1/pars[1]),
     gen.inv.der = function(t, pars) (1 - exp(-t))^(1/pars[1])/(pars[1]*(1 - exp(t))),
     gen.inv.der2 = function(t, pars) -(1-exp(-t))^(1/pars[1])*(1-pars[1]*exp(t))/(pars[1]*(1-exp(t)))^2,
+    kendall = list(coef=function(t) pPareto(t,c(1.901055,1.015722,1.038055,1)), icoef=function(t) qPareto(t,c(1.901055,1.015722,1.038055,1)), bounds=c(0,1)), #only positive dep.
+    spearman = list(coef=function(t) pPareto(t,c(2.42955,1.99806,1.02288,1)), icoef=function(t) qPareto(t,c(2.42955,1.99806,1.02288,1)), bounds=c(0,1)), #only positive dep.
     lower = 1,     #Pi, g(t)=-ln(t)
     upper = Inf,   #M
     id="Joe"
@@ -156,7 +168,9 @@ genAMH <- function(...) {
     gen.inv = function(t, pars) (1-pars[1])/(exp(t)-pars[1]),
     gen.inv.der = function(t, pars) -exp(t)*(1-pars[1])/(exp(t)-pars[1])^2,
     gen.inv.der2 = function(t, pars) exp(t)*(exp(t)+pars[1])*(1-pars[1])/(exp(t)-pars[1])^3,
-    lower = -1,     
+    kendall = list(coef=function(t) (3*t-2)/(3*t)-(2*(1-t)^2*log(1-t))/(3*t^2), icoef=NULL, bounds=c(-0.1817258,1/3)), 
+    spearman = list(coef=function(t) 0.641086*(-1 + 1.71131^t), icoef=function(t) log(t/0.641086+1,1.71131), bounds=c(-0.271065,0.478418)),
+    lower = -1,   #par=0 => Pi   
     upper = 0.9999,
     id="AMH"
   )
@@ -222,6 +236,8 @@ depGumbel <- function(...) {
     dep = function(t,pars) (sum(t^pars[1]) + (1 - sum(t))^pars[1])^(1/pars[1]),
     dep.der = function(t,pars) (t^(pars[1]-1)-(1-t)^(pars[1]-1)) * (t^pars[1]+(1-t)^pars[1])^(1/pars[1]-1),
     dep.der2 = function(t,pars) (pars[1]-1)*(-(t-1)*t)^(pars[1]-2)*(t^pars[1] + (1 - t)^pars[1])^(1/pars[1]-2),
+    kendall = list(coef=function(t) 1-1/t, icoef=function(t) 1/(1-t), bounds=c(0,1)),
+    spearman = list(coef=function(t) pPareto(t,c(1.41917,2.14723,1,1)), icoef=function(t) qPareto(t,c(1.41917,2.14723,1,1)), bounds=c(0,1)),
     lower = c(1), #A=1, upper bound of all Pickands' dependence functions  
     upper = Inf,   #A=max(t1,t2,...,1-t1-t2-...), lower bound of all Pickands' dependence functions
     id="Gumbel"
@@ -249,6 +265,8 @@ depGalambos <- function(...) {
       if(abs(pars[1]-1) < 1e-5) return(2)
       ((1+pars[1])*(-(-1+t)*t)^(-2+pars[1])) * ((1-t)^-pars[1]+t^-pars[1])^(-1/pars[1])/((1-t)^pars[1]+t^pars[1])^2
     },
+    kendall = list(coef=function(t) pPareto(t,c(0.579021,0.382682,0.48448,0)), icoef=function(t) qPareto(t,c(0.579021,0.382682,0.48448,0)), bounds=c(0,1)), 
+    spearman = list(coef=function(t) pPareto(t,c(0.876443,0.484209,0.307277,0)), icoef=function(t) qPareto(t,c(0.876443,0.484209,0.307277,0)), bounds=c(0,1)),
     lower = c(0),    #A=1
     upper = c(10),		#A=max(t1,t2,...,1-t1-t2-...) 
     id="Galambos"
@@ -301,6 +319,8 @@ depHuslerReiss <- function(...) {
       if(is.finite(t) && (t <= 0 || t >= 1)) return(0)
       exp(-(4+pars[1]^4*log(t/(1-t))^2)/(8*pars[1]^2)) * pars[1] * sqrt(t/(2*pi*(1-t))) / (2*(1-t)*t^2)
     },
+    kendall = list(coef=function(t) pPareto(t,c(0.799473,0.25111,0.298499,0)), icoef=function(t) qPareto(t,c(0.799473,0.25111,0.298499,0)), bounds=c(0,1)), 
+    spearman = list(coef=function(t) pPareto(t,c(0.877543,0.485643,0.307806,0)), icoef=function(t) qPareto(t,c(0.876443,0.484209,0.307277,0)), bounds=c(0,1)),
     lower = c(0),  #A=1, indep.
     upper = Inf,  	#A=max(t,1-t), perf.pos.dep
     id="Husler-Reiss"
@@ -510,6 +530,8 @@ copGumbel <- function(...) {
   output <- list(
     parameters = c(4),
     pcopula = function(t, pars) exp(-sum((-log(t))^pars[1])^(1/pars[1])),
+    kendall = list(coef=function(t) 1-1/t, icoef=function(t) 1/(1-t), bounds=c(0,1)),
+    spearman = list(coef=function(t) pPareto(t,c(1.41917,2.14723,1,1)), icoef=function(t) qPareto(t,c(1.41917,2.14723,1,1)), bounds=c(0,1)),
     lower = 1,     #Pi, g(t)=-ln(t)
     upper = Inf,  	#M
     id="Gumbel"
@@ -523,6 +545,8 @@ copFGM <- function(...) {
     parameters = c(0.5), #if 0 then product copula Pi
     pcopula = function(t, pars) prod(t)*(pars[1]*prod(1-t)+1),
     dcopula = function(t, pars) 1 + pars[1]*(prod(2*t-1)),
+    kendall = list(coef=function(t) 2*t/9, icoef=function(t) 9*t/2, bounds=c(-2/9,2/9)),
+    spearman = list(coef=function(t) t/3, icoef=function(t) 3*t, bounds=c(-1/3,1/3)),
     lower = -1,  #
     upper = 1,    #
     id="FGM"
@@ -546,6 +570,15 @@ copPlackett <- function(...) {
       if(abs(pars[1]-1) < 0.00001) 1 
       else pars[1]*(1+(sum(t)-2*prod(t))*(pars[1]-1))/((1+(pars[1]-1)*sum(t))^2-4*prod(t)*pars[1]*(pars[1]-1))^(3/2)
     },
+    rcopula = function(n, pars) {
+      u <- runif(n); v <- runif(n);
+      if(abs(pars[1]-1) < 0.00001) return(cbind(u,v))
+      a <- v*(1-v) 
+      b <- sqrt(pars[1]*(pars[1]+4*a*u*(1-u)*(1-pars[1])^2))
+      cbind(u,(2*a*(u*pars[1]^2+1-u)+pars[1]*(1-2*a)-(1-2*v)*b)/(2*pars[1]+2*a*(pars[1]-1)^2))
+    },
+    kendall = list(coef=function(t) pPareto(t,c(3.24135,0.538913,1.21742,1)), icoef=function(t) qPareto(t,c(3.24135,0.538913,1.21742,1)), bounds=c(0,1)),
+    spearman = list(coef=function(t) (t^2-1-2*t*log(t))/(t-1)^2, icoef=NULL, bounds=c(-1,1)),
     lower = 1e-05,  #
     upper = Inf,    #
     id="Plackett"
@@ -579,6 +612,8 @@ copNormal <- function(dim=2,...) {
       exp(-0.5*t(v)%*%(solve(sig)-diag(1,length(t)))%*%v)/sqrt(det(sig))
     },
     rcopula = rcopula,
+    kendall = list(coef=function(t) 2*asin(t)/pi, icoef=function(t) sin(t*pi/2), bounds=c(-1,1)),
+    spearman = list(coef=function(t) 6*asin(t/2)/pi, icoef=function(t) 2*sin(t*pi/6), bounds=c(-1,1)),
     lower = rep.int(-0.999,npar),  #W (by limit)
     upper = rep.int(0.999,npar),  #M (by limit)
     id="normal"
@@ -727,7 +762,7 @@ dCopula <- function(data,generator=genGumbel(),depfun=dep1(),copula=NULL,
 
 cCopula <- function(data, conditional.on=c(1), generator=genGumbel(), depfun=dep1(), copula=NULL,
                     gpars=generator$parameters, dpars=depfun$parameters, pars=if(is.null(copula)) list(gpars,dpars) else copula$parameters,
-                    difference=1e-4,area=c(0), 
+                    difference=1e-4,area=c(0),
                     quantile=NULL,probability=data[,quantile]) {
   data <- rbind(data, deparse.level=0 ) #ensure data is matrix/data.frame
   dim <- ncol(data)
@@ -786,7 +821,7 @@ cCopula <- function(data, conditional.on=c(1), generator=genGumbel(), depfun=dep
 #quantile of a copula (un/conditional) distribution function
 qCopula <- function(data, quantile=1, probability=0.95, conditional.on=NULL, 
                     generator=genGumbel(), depfun=dep1(), copula=NULL, 
-                    gpars=generator$parameters, dpars=depfun$parameters, pars=if(is.null(copula)) list(gpars,dpars) else copula$parameters, 
+                    gpars=generator$parameters, dpars=depfun$parameters, pars=if(is.null(copula)) list(gpars,dpars) else copula$parameters,
                     difference=1e-4, area=c(0)) {
   data <- rbind(data, deparse.level=0 ) #ensure data is matrix/data.frame
   dim <- ncol(data) + 1
@@ -808,12 +843,13 @@ eCopula <- function(data, generator=genGumbel(), depfun=dep1(), copula=NULL,
                     ggridparameters=if(!is.null(unlist(glimits))) do.call(function(...) mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), glimits) else NULL, 
                     dgridparameters=if(!is.null(unlist(dlimits))) do.call(function(...) mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), dlimits) else NULL, 
                     gridparameters=if(!is.null(unlist(limits))) do.call(function(...) mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), limits) else NULL,
-                    technique=c("ML","LS"), procedure=c("optim","nlminb","nls","grid"), method="default", control=NULL, pgrid=10) {
+                    technique=c("ML","LS","icorr"), procedure=c("optim","nlminb","nls","grid"), method="default", corrtype=c("kendall","spearman"), 
+                    control=NULL, pgrid=10) {
   if(is.null(copula)) { 
-    eCopulaArchimax(data=data,generator=generator,depfun=depfun,glimits=glimits,dlimits=dlimits,ggridparameters=ggridparameters,dgridparameters=dgridparameters,technique=technique,procedure=procedure,method=method,control=control,pgrid=pgrid)
+    eCopulaArchimax(data=data,generator=generator,depfun=depfun,glimits=glimits,dlimits=dlimits,ggridparameters=ggridparameters,dgridparameters=dgridparameters,technique=technique,procedure=procedure,method=method,control=control,pgrid=pgrid,corrtype=corrtype)
   }
   else {
-    eCopulaGeneric(data=data,copula=copula,limits=limits,gridparameters=gridparameters,technique=technique,procedure=procedure,method=method,control=control,pgrid=pgrid)
+    eCopulaGeneric(data=data,copula=copula,limits=limits,gridparameters=gridparameters,technique=technique,procedure=procedure,method=method,control=control,pgrid=pgrid,corrtype=corrtype)
   }
 }
 
@@ -823,153 +859,187 @@ eCopulaArchimax <- function(data, generator, depfun=dep1(),
                             dlimits=list(depfun$lower,depfun$upper),
                             ggridparameters=if(!is.null(unlist(glimits))) do.call(function(...) mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), glimits) else NULL, 
                             dgridparameters=if(!is.null(unlist(dlimits))) do.call(function(...) mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), dlimits) else NULL, 
-                            technique=c("ML","LS"), procedure=c("optim","nlminb","nls","grid"), method="default", control=NULL, pgrid=10) {
-	#initial (local) variables
-	npg <- length(generator$parameters); npd <- length(depfun$parameters)  #number of gen and dep parameters
-	ig <- min(1,npg):npg; id <- {if(npd < 1) 0 else (1:npd)+npg}   #indices of generator and depfun parameters
+                            technique=c("ML","LS","icorr"), procedure=c("optim","nlminb","nls","grid"), method="default", corrtype=c("kendall","spearman"), 
+                            control=NULL, pgrid=10) {
+  #initial (local) variables
+  npg <- length(generator$parameters); npd <- length(depfun$parameters)  #number of gen and dep parameters
+  ig <- min(1,npg):npg; id <- {if(npd < 1) 0 else (1:npd)+npg}   #indices of generator and depfun parameters
   ind <- apply(data==1,1,prod) + apply(data==0,1,prod) # indices for removing unit and zero rows in data
   if(technique[1]=="LS") empC <- pCopulaEmpirical(data)[!ind]
   data <- data[!ind,]  
-	splitad <- function(pars) list(gpars=pars[ig],dpars=pars[id])	#separate gen/dep parameters
-	#switch to fitting technique
-	switch(technique[1],
-		ML={
-			fun <- function(pars) {
-				pars <- comboe(pars)
-				#truncate by "almost zero" to prevent negative values occured when numerical derivatives are used
-				copuladensity <- pmax(dCopula(data, generator=generator, depfun=depfun, pars=list(pars[ig],pars[id])), exp(-50)) 
-				sum(log(copuladensity))
-			}
-			fscale <- -1
-		},
-		LS={
-			fun <- function(pars) {
-				pars <- comboe(pars)
-        sum((pCopula(data,	generator=generator, depfun=depfun, pars=list(pars[ig],pars[id])) - empC)^2)
-			}
-			fscale <- +1
-			funNLS <- function(u,pars) {
-				pars <- comboe(pars)
-				pCopula(u, generator=generator, depfun=depfun, pars=list(pars[ig],pars[id]))
-			}
-		}
-	)
-	#decision tree of grid estimation option 
-	if(procedure[1]=="grid") {	
-		#preparing parameters
-		makeseq <- function(x) {	#make sequence if any argument for seq() is recognized  
-			if(sum(match(names(x),c("from","to","by","length.out","along.with"),nomatch =0)) > 0) {
-				x <- replace(x,x==Inf,100); x <- replace(x,x==-Inf,-100)
-				return(unique(do.call(seq,as.list(x))))
-			}
-			else return(x)
-		}
-		ggridparameters <- lapply(ggridparameters,makeseq); dgridparameters <- lapply(dgridparameters,makeseq)
-		ggridparameters <- mapply(function(x,y,z) x[x>=y & x<=z], ggridparameters, generator$lower, generator$upper, SIMPLIFY=FALSE)
-		dgridparameters <- mapply(function(x,y,z) x[x>=y & x<=z], dgridparameters, depfun$lower, depfun$upper, SIMPLIFY=FALSE)
-		parsgrid <- as.matrix(expand.grid(c(ggridparameters,dgridparameters), KEEP.OUT.ATTRS = FALSE))
-		dimnames(parsgrid) <- NULL	#prevent apply from returning infinite values
-		comboe <- identity #just for compatibility with (unconditional) optimization procedures
-		#evaluation 
-		ind <- order(fvalue <- fscale*apply(parsgrid,1,fun))
-		res <- list(
-			parestim=unlist(parsgrid[ind[1],], use.names = FALSE),
-			fvalue=fscale*fvalue[ind[1]],
-			complete=list(
-				parsgrid=t(parsgrid),
-				fvalue=fscale*fvalue,
-				relfvalues=(max(fvalue)-fvalue)/(max(fvalue)-min(fvalue))
-				)
-			)
-		}		
-	else {
-		#immediate exceptions
-		if(technique[1]=="ML" && procedure[1]=="nls" ) stop("ML and nls cannot be combined")
-		st <- c(generator$parameters, depfun$parameters)     #starting values (to improve: should be optional)
-		lo <- c(glimits[[1]], dlimits[[1]]); up <- c(glimits[[2]], dlimits[[2]])
-		if( npg+npd != length(lo) || npg+npd != length(up)) stop("differing number of parameters")
-		ind <- st < lo;   st[ind] <- lo[ind]
-		ipo <- (up - lo) <= 0; ipog <- ipo[ig]; ipod <- ipo[id]  #T/F index of parameters omited in estimation
-		npe <- sum(!ipo)			#number of parameters that will be estimated
-		ste <- st[!ipo]; loe <- lo[!ipo]; upe <- up[!ipo]   #starting and bounding values of estimated parameters
+  splitad <- function(pars) list(gpars=pars[ig],dpars=pars[id])	#separate gen/dep parameters
+  #temporarily simple procedure inserted  to provide basic functionality of "icorr" technique
+  if(technique[1]=="icorr") { 
+    if(npg+npd>1) stop("Technique icorr can currently estimate only 1-parameter copula families.")
+    if(depfun$id=="1") copula <- generator
+    else copula <- depfun
+    if(is.null(corrlist <- copula[[corrtype[1]]])) stop("No relation of correlation coefficient to copula parameter defined.")
+    coef <- cor(data,method=corrtype)[1,2]
+    if((coef > corrlist$bounds[2]) || (coef < corrlist$bounds[1])) stop("Dependence measure out of bounds")
+    if(is.null(corrlist$icoef)) {
+      lim <- unlist(c(glimits,dlimits)); lim <- replace(lim,lim==Inf,1000); lim <- replace(lim,lim==-Inf,-1000)
+      parestim <- uniroot(function(t) corrlist$coef(t)-coef,interval=lim)$root 
+    }
+    else parestim <- corrlist$icoef(coef)
+    output <- list(parameters=splitad(parestim),approach=c(technique[1]),fvalue=NULL,procedure.output=NULL)
+    class(output) <- "eCopulaArchimax"
+    return(output)
+  }
+  #switch to fitting technique
+  switch(technique[1],
+         ML={
+           fun <- function(pars) {
+             pars <- comboe(pars)
+             #truncate by "almost zero" to prevent negative values occured when numerical derivatives are used
+             copuladensity <- pmax(dCopula(data, generator=generator, depfun=depfun, pars=list(pars[ig],pars[id])), exp(-50)) 
+             sum(log(copuladensity))
+           }
+           fscale <- -1
+         },
+         LS={
+           fun <- function(pars) {
+             pars <- comboe(pars)
+             sum((pCopula(data, generator=generator, depfun=depfun, pars=list(pars[ig],pars[id])) - empC)^2)
+           }
+           fscale <- +1
+           funNLS <- function(u,pars) {
+             pars <- comboe(pars)
+             pCopula(u, generator=generator, depfun=depfun, pars=list(pars[ig],pars[id]))
+           }
+         }
+  )
+  #decision tree of grid estimation option 
+  if(procedure[1]=="grid") {	
+    #preparing parameters
+    makeseq <- function(x) {	#make sequence if any argument for seq() is recognized  
+      if(sum(match(names(x),c("from","to","by","length.out","along.with"),nomatch =0)) > 0) {
+        x <- replace(x,x==Inf,100); x <- replace(x,x==-Inf,-100)
+        return(unique(do.call(seq,as.list(x))))
+      }
+      else return(x)
+    }
+    ggridparameters <- lapply(ggridparameters,makeseq); dgridparameters <- lapply(dgridparameters,makeseq)
+    ggridparameters <- mapply(function(x,y,z) x[x>=y & x<=z], ggridparameters, generator$lower, generator$upper, SIMPLIFY=FALSE)
+    dgridparameters <- mapply(function(x,y,z) x[x>=y & x<=z], dgridparameters, depfun$lower, depfun$upper, SIMPLIFY=FALSE)
+    parsgrid <- as.matrix(expand.grid(c(ggridparameters,dgridparameters), KEEP.OUT.ATTRS = FALSE))
+    dimnames(parsgrid) <- NULL	#prevent apply from returning infinite values
+    comboe <- identity #just for compatibility with (unconditional) optimization procedures
+    #evaluation 
+    ind <- order(fvalue <- fscale*apply(parsgrid,1,fun))
+    res <- list(
+      parestim=unlist(parsgrid[ind[1],], use.names = FALSE),
+      fvalue=fscale*fvalue[ind[1]],
+      complete=list(
+        parsgrid=t(parsgrid),
+        fvalue=fscale*fvalue,
+        relfvalues=(max(fvalue)-fvalue)/(max(fvalue)-min(fvalue))
+      )
+    )
+  }		
+  else {
+    #immediate exceptions
+    if(technique[1]=="ML" && procedure[1]=="nls" ) stop("ML and nls cannot be combined")
+    st <- c(generator$parameters, depfun$parameters)     #starting values (to improve: should be optional)
+    lo <- c(glimits[[1]], dlimits[[1]]); up <- c(glimits[[2]], dlimits[[2]])
+    if( npg+npd != length(lo) || npg+npd != length(up)) stop("differing number of parameters")
+    ind <- st < lo;   st[ind] <- lo[ind]
+    ipo <- (up - lo) <= 0; ipog <- ipo[ig]; ipod <- ipo[id]  #T/F index of parameters omited in estimation
+    npe <- sum(!ipo)			#number of parameters that will be estimated
+    ste <- st[!ipo]; loe <- lo[!ipo]; upe <- up[!ipo]   #starting and bounding values of estimated parameters
     comboe <- function(pars) {                               #combine omited and estimated parameters
-		  parst <- numeric(npg+npd); parst[ipo] <- lo[ipo]; parst[!ipo] <- pars; parst
-		}
-		#switch to fitting procedure
-		switch(procedure[1],
-			optim={
-				res <- optim( par=st[!ipo], fn=fun, lower=lo[!ipo], upper=up[!ipo], 
-					method=ifelse(method=="default","L-BFGS-B",method), control=c(list(fnscale=fscale,factr=1e12),control) 
-					)
-				res <- list(parestim=res$par,fvalue=res$value,procedure.output=res)
-				},
-			nlminb={
-				fun1 <- function(pars) fscale*fun(pars)        #check the "port" help to circumvent this line
-				res <- nlminb( start=st[!ipo], objective=fun1, lower=lo[!ipo], upper=up[!ipo],control=c(list(),control));
-				res <- list(parestim=res$par,fvalue=fscale*res$objective,procedure.output=res)
-				},
-			nls={
-				nlsmethod <- ifelse(method=="default","port",method) 
-        if(ncol(data)!=3) stop("nls currently available only for 3D") #tip for improvement: handle formula separately in advance
-        emp <- as.data.frame(data); colnames(emp) <- c('u1','u2','u3'); emp <-cbind(empC,emp);
-				res <- switch(npe,
-					nls(C ~ funNLS(c(u1, u2,u3), c(par1)),
-							data = data,
-							start = list(par1 = ste[1]),
-							lower = list(par1 = loe[1]),
-							upper = list(par1 = upe[1]),
-							algorithm = nlsmethod
-							),
-					nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2)),
-							data = emp,
-							start = list(par1 = ste[1],par2 = ste[2]),
-							lower = list(par1 = loe[1],par2 = loe[2]),
-							upper = list(par1 = upe[1],par2 = upe[2]),
-							algorithm = nlsmethod
-							),
-					nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2,par3)),
-							data = emp,
-							start = list(par1 = ste[1],par2 = ste[2],par3 = ste[3]),
-							lower = list(par1 = loe[1],par2 = loe[2],par3 = loe[3]),
-							upper = list(par1 = upe[1],par2 = upe[2],par3 = upe[3]),
-							algorithm = nlsmethod
-							),
-					nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2,par3,par4)),
-							data = emp,
-							start = list(par1 = ste[1],par2 = ste[2],par3 = ste[3],par4 = ste[4]),
-							lower = list(par1 = loe[1],par2 = loe[2],par3 = loe[3],par4 = loe[4]),
-							upper = list(par1 = upe[1],par2 = upe[2],par3 = upe[3],par4 = upe[4]),
-							algorithm = nlsmethod
-							),
-					nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2,par3,par4,par5)),
-							data = emp,
-							start = list(par1 = ste[1],par2 = ste[2],par3 = ste[3],par4 = ste[4],par5 = ste[5]),
-							lower = list(par1 = loe[1],par2 = loe[2],par3 = loe[3],par4 = loe[4],par5 = loe[5]),
-							upper = list(par1 = upe[1],par2 = upe[2],par3 = upe[3],par4 = upe[4],par5 = upe[5]),
-							algorithm = nlsmethod
-							)
-					)
-				res <- list(parestim=as.vector(coef(res)),fvalue=sum(residuals(res)^2),procedure.output=res)
-				}
-			)
-		}
-	parestim <- splitad(comboe(res$parestim))
-	if("rescalepars" %in% names(depfun)) parestim$dpars <- depfun$rescalepars(parestim$dpars) # rescale to true parameters of depfun (if appliable)
-	output <- list(parameters=parestim,approach=c(technique[1],procedure[1],method[1]),fvalue=res$fvalue,procedure.output=res)
-	class(output) <- "eCopulaArchimax"
-	output
+      parst <- numeric(npg+npd); parst[ipo] <- lo[ipo]; parst[!ipo] <- pars; parst
+    }
+    #switch to fitting procedure
+    switch(procedure[1],
+           optim={
+             res <- optim( par=st[!ipo], fn=fun, lower=lo[!ipo], upper=up[!ipo], 
+                           method=ifelse(method=="default","L-BFGS-B",method), control=c(list(fnscale=fscale,factr=1e12),control) 
+             )
+             res <- list(parestim=res$par,fvalue=res$value,procedure.output=res)
+           },
+           nlminb={
+             fun1 <- function(pars) fscale*fun(pars)        #check the "port" help to circumvent this line
+             res <- nlminb( start=st[!ipo], objective=fun1, lower=lo[!ipo], upper=up[!ipo],control=c(list(),control));
+             res <- list(parestim=res$par,fvalue=fscale*res$objective,procedure.output=res)
+           },
+           nls={
+             nlsmethod <- ifelse(method=="default","port",method) 
+             if(ncol(data)!=3) stop("nls currently available only for 3D") #tip for improvement: handle formula separately in advance
+             emp <- as.data.frame(data); colnames(emp) <- c('u1','u2','u3'); emp <-cbind(empC,emp);
+             res <- switch(npe,
+                           nls(C ~ funNLS(c(u1, u2,u3), c(par1)),
+                               data = data,
+                               start = list(par1 = ste[1]),
+                               lower = list(par1 = loe[1]),
+                               upper = list(par1 = upe[1]),
+                               algorithm = nlsmethod
+                           ),
+                           nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2)),
+                               data = emp,
+                               start = list(par1 = ste[1],par2 = ste[2]),
+                               lower = list(par1 = loe[1],par2 = loe[2]),
+                               upper = list(par1 = upe[1],par2 = upe[2]),
+                               algorithm = nlsmethod
+                           ),
+                           nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2,par3)),
+                               data = emp,
+                               start = list(par1 = ste[1],par2 = ste[2],par3 = ste[3]),
+                               lower = list(par1 = loe[1],par2 = loe[2],par3 = loe[3]),
+                               upper = list(par1 = upe[1],par2 = upe[2],par3 = upe[3]),
+                               algorithm = nlsmethod
+                           ),
+                           nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2,par3,par4)),
+                               data = emp,
+                               start = list(par1 = ste[1],par2 = ste[2],par3 = ste[3],par4 = ste[4]),
+                               lower = list(par1 = loe[1],par2 = loe[2],par3 = loe[3],par4 = loe[4]),
+                               upper = list(par1 = upe[1],par2 = upe[2],par3 = upe[3],par4 = upe[4]),
+                               algorithm = nlsmethod
+                           ),
+                           nls(C ~ funNLS(c(u1, u2,u3), c(par1,par2,par3,par4,par5)),
+                               data = emp,
+                               start = list(par1 = ste[1],par2 = ste[2],par3 = ste[3],par4 = ste[4],par5 = ste[5]),
+                               lower = list(par1 = loe[1],par2 = loe[2],par3 = loe[3],par4 = loe[4],par5 = loe[5]),
+                               upper = list(par1 = upe[1],par2 = upe[2],par3 = upe[3],par4 = upe[4],par5 = upe[5]),
+                               algorithm = nlsmethod
+                           )
+             )
+             res <- list(parestim=as.vector(coef(res)),fvalue=sum(residuals(res)^2),procedure.output=res)
+           }
+    )
+  }
+  parestim <- splitad(comboe(res$parestim))
+  if("rescalepars" %in% names(depfun)) parestim$dpars <- depfun$rescalepars(parestim$dpars) # rescale to true parameters of depfun (if appliable)
+  output <- list(parameters=parestim,approach=c(technique[1],procedure[1],method[1]),fvalue=res$fvalue,procedure.output=res)
+  class(output) <- "eCopulaArchimax"
+  output
 }
 
 ## fitting generic copula
 eCopulaGeneric <- function(data, copula=copGumbel(),
                            limits=list(copula$lower,copula$upper),
                            gridparameters=if(!is.null(unlist(limits))) do.call(function(...) mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), limits) else NULL,
-                           technique=c("ML","LS"), procedure=c("optim","nlminb","grid"), method="default", control=NULL, pgrid=10) {
+                           technique=c("ML","LS","icorr"), procedure=c("optim","nlminb","grid"), method="default", corrtype=c("kendall","spearman"), 
+                           control=NULL, pgrid=10) {
   #initial (local) variables
   np <- length(copula$parameters)  #number copula parameters
   ind <- apply(data==1,1,prod) + apply(data==0,1,prod) # indices for removing unit and zero rows in data
   if(technique[1]=="LS") empC <- pCopulaEmpirical(data)[!ind]
-  data <- data[!ind,]  
+  data <- data[!ind,]
+  #temporarily simple procedure inserted  to provide basic functionality of "icorr" technique
+  if(technique[1]=="icorr") { 
+    if(np>1) stop("Technique icorr can currently estimate only 1-parameter copula families.")
+    if(is.null(corrlist <- copula[[corrtype[1]]])) stop("No relation of correlation coefficient to copula parameter defined.")
+    coef <- cor(data,method=corrtype)[1,2]
+    if((coef > corrlist$bounds[2]) || (coef < corrlist$bounds[1])) stop("Dependence measure out of bounds")
+    if(is.null(corrlist$icoef)) {
+      lim <- unlist(limits); lim <- replace(lim,lim==Inf,1000); lim <- replace(lim,lim==-Inf,-1000)
+      parestim <- uniroot(function(t) corrlist$coef(t)-coef,interval=lim)$root 
+    }
+    else parestim <- corrlist$icoef(coef)
+    output <- list(parameters=parestim,approach=c(technique[1]),fvalue=NULL,procedure.output=NULL)
+    class(output) <- "eCopulaGeneric"
+    return(output)
+  }
   #switch to fitting technique
   switch(technique[1],
          ML={
@@ -983,11 +1053,13 @@ eCopulaGeneric <- function(data, copula=copGumbel(),
            
          },
          LS={
-           pars <- comboe(pars)
-           fun <- function(pars) sum((pCopula(data,	copula=copula, pars=pars) - empC)^2)
+           fun <- function(pars) {
+             pars <- comboe(pars)
+             sum((pCopula(data,  copula=copula, pars=pars) - empC)^2)
+           }
            fscale <- +1
          }
-         )
+  )
   #decision tree of grid estimation option 
   if(procedure[1]=="grid") {	
     #preparing parameters
@@ -1012,8 +1084,8 @@ eCopulaGeneric <- function(data, copula=copGumbel(),
         parsgrid=t(parsgrid),
         fvalue=fscale*fvalue,
         relfvalues=(max(fvalue)-fvalue)/(max(fvalue)-min(fvalue))
-        )
       )
+    )
   }		
   else {
     #immediate exceptions
@@ -1041,7 +1113,7 @@ eCopulaGeneric <- function(data, copula=copGumbel(),
              }
              else { #if "L-BFGS-B" method is used, fun arguments will not surpass the limits during optimization
                res <- optim( par=ste, fn=fun, lower=loe, upper=upe, method=method, control=c(list(fnscale=fscale,factr=1e12),control) )
-               }
+             }
              res <- list(parestim=res$par,fvalue=res$value,procedure.output=res) #compose output
            },
            nlminb={
@@ -1049,7 +1121,7 @@ eCopulaGeneric <- function(data, copula=copGumbel(),
              res <- nlminb( start=ste, objective=fun1, lower=loe, upper=upe,control=c(list(),control));
              res <- list(parestim=res$par,fvalue=fscale*res$objective,procedure.output=res)
            }
-           )
+    )
   }
   parestim <- comboe(res$parestim)
   if("rescalepars" %in% names(copula)) parestim <- copula$rescalepars(parestim) # rescale to true parameters of copula (if appliable)
@@ -1133,14 +1205,15 @@ gCopula <- function(data, generator, depfun=dep1(), copula=NULL,
                     glimits=list(generator$lower,generator$upper), 
                     dlimits=list(depfun$lower,depfun$upper),
                     limits=list(copula$lower,copula$upper),
-                    etechnique=c("ML","LS"), eprocedure=c("optim","nlminb","nls"), emethod="default", econtrol=NULL,
+                    etechnique=c("ML","LS","icorr"), eprocedure=c("optim","nlminb","nls"), emethod="default", ecorrtype=c("kendall","spearman"), econtrol=NULL,
                     N=100, m=nrow(data), ncores=1) {  
   if(is.list(data)) return(gCopulaEmpirical(data=data,N=N,ncores=ncores))
   n <- nrow(data)
   dim <- ncol(data)
   Ein <- pCopulaEmpirical(data)
   fKn <- function(x,y) sum(y <= x)/length(y)
-  fparest <- function(data) eCopula(data,generator=generator,depfun=depfun,copula=copula,glimits=glimits,dlimits=dlimits,limits=limits,technique=etechnique,procedure=eprocedure,method=emethod,control=econtrol)    
+  fparest <- function(data) eCopula(data,generator=generator,depfun=depfun,copula=copula,glimits=glimits,dlimits=dlimits,limits=limits,
+                                    technique=etechnique,procedure=eprocedure,method=emethod,corrtype=ecorrtype,control=econtrol)    
   fsimcop <- function(parameters) rCopula(m,dim=dim,generator=generator,depfun=depfun,copula=copula, pars=parameters) 
   estim <- fparest(data)
   #---2D Archimax---

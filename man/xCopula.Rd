@@ -66,15 +66,16 @@ eCopula(data, generator=genGumbel(), depfun=dep1(), copula=NULL,
     function(...) mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), dlimits) else NULL, 
   gridparameters=if(!is.null(unlist(limits))) do.call(function(...) 
     mapply(c,...,length.out=pgrid,SIMPLIFY=FALSE), limits) else NULL,
-  technique=c("ML","LS"), procedure=c("optim","nlminb","nls","grid"), method="default", 
-  control=NULL, pgrid=10)
+  technique=c("ML","LS","icorr"), procedure=c("optim","nlminb","nls","grid"), 
+  method="default", corrtype = c("kendall","spearman"), control=NULL, pgrid=10)
 
 gCopula(data, generator, depfun=dep1(), copula=NULL,
   glimits=list(generator$lower,generator$upper), 
   dlimits=list(depfun$lower,depfun$upper),
   limits=list(copula$lower,copula$upper),
-  etechnique=c("ML","LS"), eprocedure=c("optim","nlminb","nls"), emethod="default", 
-  econtrol=NULL,  N=100, m=nrow(data), ncores=1)
+  etechnique=c("ML","LS","icorr"), eprocedure=c("optim","nlminb","nls"), 
+  emethod="default", ecorrtype=c("kendall","spearman"), econtrol=NULL,  
+  N=100, m=nrow(data), ncores=1)
 
 gCopulaEmpirical(data,N=100,ncores=1)
 
@@ -153,13 +154,16 @@ number of dimensions of copula = number of variables.
 list of two vectors: lower and upper bound of \code{generator}, \code{depfun} and generic copula parameters, respectively.
 }
   \item{technique, etechnique}{
-copula parameters estimation method: Maximum pseudo-likelihood \code{"ML"} and Least square distance to empirical copula \code{"LS"}.
+copula parameters estimation method: Maximum pseudo-likelihood \code{"ML"}, Least square distance to empirical copula \code{"LS"} and Inversion of correlation coefficient relation to copula parameter \code{"icorr"}.
 }
   \item{procedure, eprocedure}{
-R optimization routine to estimate parameters (\code{"optim"}, \code{"nlminb"}, \code{"nls"}) or "brute force" search over parameter grid (\code{"grid"}). The last one is useful when the other methods give unsatisfactory results. \code{"nls"} cannot be used with ML technique.
+R optimization routine to estimate parameters (\code{"optim"}, \code{"nlminb"}, \code{"nls"}) or "brute force" search over parameter grid (\code{"grid"}). The last one is useful when the other methods give unsatisfactory results. \code{"nls"} cannot be used with ML technique. Ignored with "icorr" technique.
 }
   \item{method, emethod}{
 optimisation algorithm used by \code{optim} procedure.
+}
+  \item{corrtype,ecorrtype}{
+character. Correlation coeficient used by \code{icorr} technique, either "kendall" and "spearman".
 }
   \item{control,econtrol}{
 list of control settings passed to optimization routines.
@@ -286,7 +290,9 @@ eCopula(rge,ge,technique="ML",procedure="grid",glimits=list(2.,6.),pgrid=20)
 # specify nodes of the grid
 eCopula(rge,ge,tech="ML",proc="grid",ggridparameters=list(c(2.,6.,length.out=20))) 
 # without naming, it won't create sequence
-eCopula(rge,ge,technique="ML",procedure="grid",ggridparameters=list(c(2.,6.,20))) 
+eCopula(rge,ge,technique="ML",procedure="grid",ggridparameters=list(c(2.,6.,20)))
+# inversion of Kendall's tau
+eCopula(rge,ge,technique="icorr",corrtype="kendall")
 
 ## --- GoF test, set higher N to increase precision of p-value
 gCopula(rge,ge,etechnique="ML",N=10)
@@ -322,3 +328,4 @@ pCopula(c(0.3,0.5,1.0),copula=copGumbel(),pars=4.)  #0.2906142
 \keyword{ goodness-of-fit test }
 \keyword{ d-increasing }
 \keyword{ maximum likelihood }
+\keyword{ inverse of correlation coefficient }

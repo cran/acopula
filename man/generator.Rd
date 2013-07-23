@@ -45,14 +45,15 @@ Currently implemented families of Archimedean copula generator:
 }
 }
 \value{
-  \item{parameters}{numeric vector to be used whenever parameters of generator are not supplied to procedure that use it, or as starting values in estimation}
-  \item{gen}{function of two arguments; the first is generator argument, the another
-is genereator parameters}
-  \item{gen.der}{function; generator first derivative}
-  \item{gen.der2}{function; generator second derivative}
-  \item{gen.inv}{function; generator inverse}
-  \item{gen.inv.der}{function; first derivative of generator inverse}
-  \item{gen.inv.der2}{function; second derivative of generator inverse}
+  \item{parameters}{numeric vector to be used whenever parameters of generator are not supplied to procedure that use it, or as starting values in estimation.}
+  \item{gen}{function of two arguments. The first is generator argument, the another
+is genereator parameters.}
+  \item{gen.der}{function. Generator first derivative.}
+  \item{gen.der2}{function. Generator second derivative.}
+  \item{gen.inv}{function. Generator inverse.}
+  \item{gen.inv.der}{function. First derivative of generator inverse.}
+  \item{gen.inv.der2}{function. second derivative of generator inverse.}
+  \item{kendall,spearman}{list. Correlation coefficient as function of copula parameter (\code{coef}), its inverse (\code{icoef}) and range (\code{bounds}). Available only for 1-parameter families.}
   \item{lower,upper}{numeric; parameters boundary}
   \item{id}{character; identification of generator family}
 }

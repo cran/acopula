@@ -32,10 +32,12 @@ depMax(power = 10, ...)
 depTawn(dim = 2, ...)
 
 depCC(depfun = list(dep1(),depGumbel()), 
-  dparameters = lapply(depfun,function(x) rep(list(NULL),max(1,length(x$parameters)))),
+  dparameters = lapply(depfun,
+    function(x) rep(list(NULL),max(1,length(x$parameters)))),
   dim = 2)
 depGCC(depfun=list(dep1(),depGumbel()), 
-  dparameters = lapply(depfun,function(x) rep(list(NULL),max(1,length(x$parameters)))),
+  dparameters = lapply(depfun,
+    function(x) rep(list(NULL),max(1,length(x$parameters)))),
   dim = 2, symmetry = FALSE)
     
 ldepPartition3D(power = 8)
@@ -82,6 +84,7 @@ Since \eqn{\sum_i t_i=1}{sum(t)=1} a dependence function accepts argument vector
   \item{dep}{function of two arguments; the first is depfun argument, the another is depfun parameters}
   \item{dep.der}{function; depfun first derivative}
   \item{dep.der2}{function; depfun second derivative}
+  \item{kendall,spearman}{list. Correlation coefficient as function of copula parameter (\code{coef}), its inverse (\code{icoef}) and range (\code{bounds}). Available only for 1-parameter families.}
   \item{lower,upper}{numeric; parameters boundary}
   \item{id}{character; identification of depfun family}
   \item{combpars,rescalepars}{function; extract the combination parameters from the set of provided parameters and rescale them if not fulfilling inner conditions of the (general) convex combination}

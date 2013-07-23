@@ -49,6 +49,7 @@ where \eqn{\Phi^{-1}}{\Phi^-1} is quantile function of standard normal and \eqn{
   \item{parameters}{numeric vector to be used whenever parameters of copula are not supplied to procedure that use it, or as starting values in estimation.}
   \item{pcopula,dcopula}{function of two arguments. The first is vector of copula arguments, the another is vector of parameters.}
   \item{rcopula}{function of two arguments. The first is copula dimension or length of random sample (normal copula), the another is vector of parameters.}  
+  \item{kendall,spearman}{list. Correlation coefficient as function of copula parameter (\code{coef}), its inverse (\code{icoef}) and range (\code{bounds}). Available only for 1-parameter families.}
   \item{lower,upper}{numeric. Parameters boundary.}
   \item{id}{character. Identification of copula family.}
 }

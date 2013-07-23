@@ -109,9 +109,9 @@ flush(stderr()); flush(stdout())
 ### ** Examples
 
 ##cumulative distribution function of a bivariate normal copula 
-##evaluated at point c(0.5,0.6)
-nintegrate(function(x) dCopula(x,cop=copNormal(),par=0.5), lower=0.001, upper=c(0.5,0.6),
-           subdivisions=20) #compare pCopula(c(0.5,0.6),cop=copNormal(),par=0.5)
+##evaluated at point c(0.5,0.6); compare pCopula(c(0.5,0.6),cop=copNormal(),par=0.5)
+nintegrate(function(x) dCopula(x,cop=copNormal(),par=0.5), 
+  lower=0.001, upper=c(0.5,0.6), subdivisions=20) 
 
 
 
@@ -146,7 +146,8 @@ flush(stderr()); flush(stdout())
 ###   print.eCopulaGeneric print.gCopula print.isCopula
 ### Keywords: cumulative distribution function probability density function
 ###   conditional probability quantile sampling empirical copula
-###   goodness-of-fit test d-increasing maximum likelihood
+###   goodness-of-fit test d-increasing maximum likelihood inverse of
+###   correlation coefficient
 
 ### ** Examples
 
@@ -192,7 +193,9 @@ eCopula(rge,ge,technique="ML",procedure="grid",glimits=list(2.,6.),pgrid=20)
 # specify nodes of the grid
 eCopula(rge,ge,tech="ML",proc="grid",ggridparameters=list(c(2.,6.,length.out=20))) 
 # without naming, it won't create sequence
-eCopula(rge,ge,technique="ML",procedure="grid",ggridparameters=list(c(2.,6.,20))) 
+eCopula(rge,ge,technique="ML",procedure="grid",ggridparameters=list(c(2.,6.,20)))
+# inversion of Kendall's tau
+eCopula(rge,ge,technique="icorr",corrtype="kendall")
 
 ## --- GoF test, set higher N to increase precision of p-value
 gCopula(rge,ge,etechnique="ML",N=10)
@@ -215,6 +218,25 @@ isCopula(genGumbel(),dagrid=10,pgrid=10,tolerance=1e-15)
 pCopula(c(0.3,0.5,1.0),genClayton(),depGumbel(),gpars=0.01,dpars=4.)  #0.2907613
 pCopula(c(0.3,0.5,1.0),copula=copGumbel(),pars=4.)  #0.2906142
 
+
+
+
+cleanEx()
+nameEx("xPareto")
+### * xPareto
+
+flush(stderr()); flush(stdout())
+
+### Name: xPareto
+### Title: 4-parametric univariate Pareto distribution
+### Aliases: pPareto qPareto
+### Keywords: Pareto distribution CDF quantile
+
+### ** Examples
+
+## probability P(X<q)=p
+pPareto(t = 2.5, pars = c(10.,5.,3.,1))  # 0.8823436
+qPareto(t = .Last.value, pars = c(10.,5.,3.,1))  # 2.5
 
 
 
