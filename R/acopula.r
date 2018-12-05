@@ -594,9 +594,9 @@ copNormal <- function(dim=2,...) {
     m[lower.tri(m)] <- parvec #fill the lower triangle (without diagonal) with parameters 
     m+t(m)+diag(1,dim) #mirror the lower triangle and add 1's
   }
-  if(require(mvtnorm)) {
-    pcopula <- function(t,pars) pmvnorm(lower=-Inf, upper=sapply(t,qnorm), corr=parvec2matrix(pars))[1]
-    rcopula <- function(n,pars) pnorm(rmvnorm(n=n,sigma=parvec2matrix(pars)))
+  if(isTRUE(requireNamespace("mvtnorm"))) {
+    pcopula <- function(t,pars) mvtnorm::pmvnorm(lower=-Inf, upper=sapply(t,qnorm), corr=parvec2matrix(pars))[1]
+    rcopula <- function(n,pars) pnorm(mvtnorm::rmvnorm(n=n,sigma=parvec2matrix(pars)))
   }
   else {
     pcopula <- NULL

@@ -294,17 +294,17 @@ eCopula(rge,ge,technique="ML",procedure="grid",ggridparameters=list(c(2.,6.,20))
 # inversion of Kendall's tau
 eCopula(rge,ge,technique="icorr",corrtype="kendall")
 
-## --- GoF test, set higher N to increase precision of p-value
-gCopula(rge,ge,etechnique="ML",N=10)
+## --- GoF test, set substantially higher N to increase precision of p-value
+gCopula(rge,ge,etechnique="ML",N=5)
 # parallel computing takes lesser time, but the progress is not displayed
 # not available on Windows OS
 if(.Platform$OS.type!="windows") {
-  gCopula(rge,ge,etechnique="ML",N=10,ncores=2)
+  gCopula(rge,ge,etechnique="ML",N=5,ncores=2)
 }
 
 ## testing if two data sets has equal copulas
 rge1 <- rCopula(80,dim=2,genClayton(),gpars=3)
-gCopula(list(rge,rge1),N=10)
+gCopula(list(rge,rge1),N=5)
 
 ## check whether some hypotheticaly-copula function does not violate  
 ## copula properties (over data and parameters grid)

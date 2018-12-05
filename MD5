@@ -1,10 +1,9 @@
-5341abf6e267d2bddcc6ba50703d05d4 *DESCRIPTION
-8b54e5a89fbda3af5e077053d40bec76 *NAMESPACE
-7a140145b9043ac039258d6a3a549b24 *NEWS
-49ad9bb6275aef3c5f67ac50851a1c87 *R/acopula.r
-0fb2f40856de8cc1af0a6a54f8bd92c0 *acopula-Ex.R
+a0675784918818f1eed3516782aaac02 *DESCRIPTION
+3b095f8cf475df6b1a69b7b7da619930 *NAMESPACE
+c3ced7a8fc21f057ac35aca69ac9c4d8 *NEWS
+1f4b1b878618894dbea4932fa3275099 *R/acopula.r
 e6c1054efb7fd696a6a4fd53786b1232 *inst/CITATION
-214cf86ca678a8d9ef04502518a8f571 *inst/doc/acopula-userguide_0.9.2.pdf
+41dff1894b786fd98481471161f1f767 *inst/doc/acopula-userguide_0.9.2.pdf
 98692ea64592a22bde6c6ad927040bfd *inst/doc/acopula_overview.pdf
 5f3a681c2433e0fe08655e4ad3bc4142 *man/acopula-package.Rd
 ac1491258d5c4bb2f2d940b9ae169dd6 *man/copula.Rd
@@ -13,5 +12,5 @@ f6b836b9b848c1ebe79fa29750b6a941 *man/generator.Rd
 b1b26d0ad2bae9b0423bf83dda3e4ad1 *man/nderive.Rd
 52311ec3cdfe9c216a18cc98181424d7 *man/nintegrate.Rd
 0ba385a875599a670a18e45727f8ee82 *man/vpartition.Rd
-042874d0cbda24e107c2d447d25c0123 *man/xCopula.Rd
+057dddbcff79c4e8e081b63e86ec5400 *man/xCopula.Rd
 9a718dd39a2d607d8d04dad435040a54 *man/xPareto.Rd
