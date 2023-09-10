@@ -97,7 +97,7 @@ Limassol,Cyprus,27.-31.8.2012. The International Statistical Institute, 81--88 (
 Gudendorf, G., Segers, J. (2010): Extreme-value copulas. In \emph{Copula Theory and Its Applications}. Springer Berlin Heidelberg, 127-145.
 
 Insightful Corp.: EVANESCE Implementation in S-PLUS FinMetrics Module (2002).
-\url{faculty.washington.edu/ezivot/book/QuanCopula.pdf} Cited 6th July 2013.
+\url{https://faculty.washington.edu/ezivot/book/QuanCopula.pdf} Cited 6th July 2013.
 
 }
 \author{

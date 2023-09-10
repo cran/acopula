@@ -3,9 +3,9 @@ citHeader("To cite the 'acopula' package in publications use:")
 year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date, perl = TRUE)
 vers <- paste("R package version", meta$Version)
 
-citEntry(entry="Manual",
+bibentry(bibtype = "Manual",
          title = "acopula: Modelling dependence with multivariate Archimax (or any user-defined continuous) copula",
-         author = personList(as.person("Tomáš Bacigál")),
+         author = c(as.person("Tomáš Bacigál")),
          year = year,
          note = vers,
 
@@ -15,9 +15,9 @@ citEntry(entry="Manual",
                "). acopula: Modelling dependence with multivariate Archimax (or any user-defined continuous) copula. ",
                vers, ".", sep=""))
 
-citEntry(entry="InCollection",
+bibentry(bibtype = "InCollection",
          title = "R Package to Handle Archimax or Any User-Defined Continuous Copula Construction",
-         author = personList(as.person("Tomáš Bacigál")),
+         author = c(as.person("Tomáš Bacigál")),
          booktitle= "Aggregation Functions in Theory and in Practise",
          volume="228",
          editor="Bustince, Humberto and Fernandez, Javier and Mesiar, Radko and Calvo, Tomasa",
